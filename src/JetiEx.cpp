@@ -1,39 +1,66 @@
-// JetiEX.cpp
 #include "JetiEX.h"
 
-volatile bool risingEdge = false;
-volatile bool fallingEdge = false;
+volatile bool idle = true;
+volatile int t = 0;
+volatile int t2 = 0;
+volatile int start = 0;
+volatile int stop = 0;
+volatile int i = 0;
+volatile int i2 = 0;
 
 JetiEx *context;
 
-JetiEx::JetiEx(int baud, int rxPin) {
-    this->rxPin = rxPin;
-    this->baud = baud;
+int timeToBits(int time, int baud, int baudTol);
+
+JetiEx::JetiEx(int baud, int rxPin)
+{
+  this->rxPin = rxPin;
+  this->baud = baud;
+  this->bitTimeus = 1000000 / baud;
 }
 
-void JetiEx::begin() {
-    pinMode(this->rxPin, INPUT_PULLUP);
-    attachInterrupt(digitalPinToInterrupt(this->rxPin), rxInterrupt, CHANGE);
-    context = this;
-    Serial.println("JetiEX initialized");
+void JetiEx::begin()
+{
+  pinMode(this->rxPin, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(this->rxPin), rxInterrupt, CHANGE);
+  context = this;
+  Serial.println("JetiEX initialized");
 }
 
-bool JetiEx::available() {
-    if (risingEdge) {
-    Serial.println("Rising edge interrupt occurred!");
-    // Do something for the rising edge
-    risingEdge = false; // Reset the flag
+bool JetiEx::available()
+{
+  if(i != i2) {
+    i2 = i;
+    Serial.println(t);
   }
 
-  if (fallingEdge) {
-    Serial.println("Falling edge interrupt occurred!");
-    // Do something for the falling edge
-    fallingEdge = false; // Reset the flag
-  }
-    // Check for data availability and process it
-    // Implement your logic here to handle incoming data from JetiEX
-    return false;
+
+  return true;
 }
 
-void rxInterrupt() {
+void rxInterrupt()
+{
+  /*
+  if (idle)
+  {
+    // set start / stop according to measure idle time
+    digitalRead(context->rxPin) ? start = micros() : stop = micros();
+
+    // check if 20ms idle time is reached (sync is over)
+    if (stop - start > 900000)
+    {
+      idle = false;
+    }
+  }
+  else
+  {
+  */
+      (start < stop) ? start = micros() : stop=micros(); //set start / stop for next measure
+      t=std::abs(start-stop); //time since last interrupt
+      i++;
+  //}
+}
+
+int timeToBits(int time, int baud, int baudTol) {
+  return time / (1000000/baud+baudTol); //time divided by bit Timeus
 }

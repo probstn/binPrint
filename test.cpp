@@ -1,9 +1,9 @@
 #include "JetiEx.h"
 
-JetiEx jetiex = JetiEx(9600, 17);
+JetiEx jetiex = JetiEx(9600, 2);
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(9600);
   jetiex.begin();
 }
 
