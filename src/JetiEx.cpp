@@ -7,6 +7,8 @@ volatile int start = 0;
 volatile int stop = 0;
 volatile int i = 0;
 volatile int i2 = 0;
+volatile bool data_ready = false;
+bool isLow = false;
 
 JetiEx *context;
 
@@ -29,38 +31,52 @@ void JetiEx::begin()
 
 bool JetiEx::available()
 {
-  if(i != i2) {
+  if (i != i2)
+  {
     i2 = i;
-    Serial.println(t);
-  }
+    int bits = timeToBits(t, this->baud, 0);
 
+    if (bits < 1000)
+    {
+
+      for (int i = 0; i < bits; i++)
+      {
+        if (isLow)
+        {
+          Serial.print("0");
+        }
+        else
+        {
+          Serial.print("1");
+        }
+      }
+    }
+    else
+    {
+      Serial.println("/////////////////////////////////");
+    }
+    isLow = !isLow;
+  }
 
   return true;
 }
 
 void rxInterrupt()
 {
-  /*
-  if (idle)
-  {
-    // set start / stop according to measure idle time
-    digitalRead(context->rxPin) ? start = micros() : stop = micros();
+  (start < stop) ? start = micros() : stop = micros(); // set start / stop for next measure
+  t = std::abs(start - stop);                          // time since last interrupt
+  i++;                                                 // count interrupts
 
-    // check if 20ms idle time is reached (sync is over)
-    if (stop - start > 900000)
-    {
-      idle = false;
-    }
-  }
-  else
+  if (t > 20000)
+    data_ready = true; /*data ready*/
+
+  if (data_ready)
   {
-  */
-      (start < stop) ? start = micros() : stop=micros(); //set start / stop for next measure
-      t=std::abs(start-stop); //time since last interrupt
-      i++;
-  //}
+    /*currently receiving*/
+  }
 }
 
-int timeToBits(int time, int baud, int baudTol) {
-  return time / (1000000/baud+baudTol); //time divided by bit Timeus
+int timeToBits(int time, int baud, int baudTol)
+{
+  return time / (100); // time divided by bit Timeus
 }
