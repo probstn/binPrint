@@ -1,12 +1,11 @@
+#include <Arduino.h>
 #include "JetiEx.h"
 
-JetiEx jetiex = JetiEx(9600, 17);
-
 void setup() {
-  Serial.begin(115200);
-  jetiex.begin();
+    Serial.begin(115200);
+    ex_setup();
 }
 
 void loop() {
-  jetiex.available();
+    ex_process();
 }

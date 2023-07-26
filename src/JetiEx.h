@@ -1,22 +1,16 @@
 #include <Arduino.h>
+#include <vector>
 
-#ifndef JetiEX_h
-#define JetiEX_h
+double ex_getTemp();
 
-class JetiEx
-{
-private:
-public:
-    int bitTimeus; //bit Time in microseconds
-    int rxPin;
-    int baud;
-    
-    JetiEx(int baud, int rxPin);
-    void begin();
-    bool available();
-    void getData();
-};
+void ex_run(void * pvParameters);
 
-void rxInterrupt();
+void ex_setup();
 
-#endif
+void ex_handler();
+
+bool _isSync(unsigned int idx);
+
+void ex_process();
+
+void ex_evaluate();
